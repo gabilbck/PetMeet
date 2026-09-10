@@ -9,3 +9,13 @@
 3. Instalar o FastAPI
   * Paaso a passo:
   https://docs.astral.sh/uv/guides/integration/fastapi/
+  ```
+  python -m pip install fastapi uvicorn
+  ```
+
+## Inicializar projeto
+
+```
+cd app
+python -m pip install fastapi uvicorn
+```
