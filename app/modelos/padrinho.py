@@ -1,0 +1,24 @@
+"""Pessoa que apadrinha um ou mais pets, contribuindo com doacoes (RF09-11)."""
+
+from datetime import datetime
+
+from sqlalchemy import DateTime, String, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.db.base import Base
+
+
+class Padrinho(Base):
+    __tablename__ = "padrinhos"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    nome: Mapped[str] = mapped_column(String(150), nullable=False)
+    cpf: Mapped[str] = mapped_column(String(11), unique=True, index=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(255), nullable=False)
+    telefone: Mapped[str] = mapped_column(String(20), nullable=False)
+    criado_em: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    apadrinhamentos: Mapped[list["Apadrinhamento"]] = relationship(  # noqa: F821
+        back_populates="padrinho", cascade="all, delete-orphan"
+    )
+    doacoes: Mapped[list["Doacao"]] = relationship(back_populates="padrinho")  # noqa: F821

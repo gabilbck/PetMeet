@@ -1,1 +1,11 @@
-node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+uploads/*
+!uploads/.gitkeep
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
