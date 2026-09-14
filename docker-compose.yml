@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: petmeet-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: petmeet
+      POSTGRES_PASSWORD: petmeet
+      POSTGRES_DB: petmeet
+    ports:
+      - "5432:5432"
+    volumes:
+      - petmeet_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U petmeet -d petmeet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: petmeet-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://petmeet:petmeet@db:5432/petmeet
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  petmeet_db_data:
