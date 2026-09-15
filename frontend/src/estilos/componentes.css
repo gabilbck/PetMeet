@@ -1,0 +1,948 @@
+/* ---------------------------------------------------------------------------
+   PetMeet - componentes.
+
+   Regra que organiza tudo: estrutura carrega informacao. A tarja colorida da
+   esquerda de uma ficha e o estado de saude do animal; o selo e a situacao de
+   adocao. Nada de cor decorativa fora desses dois eixos.
+--------------------------------------------------------------------------- */
+
+/* --- Ficha (a superficie de tudo) ------------------------------------- */
+
+.ficha {
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+
+.ficha-corpo {
+  padding: var(--e-5);
+}
+
+/* Tarja de saude: so a ficha do pet usa, porque so o pet tem saude. */
+.ficha[data-saude] {
+  border-left: 6px solid var(--linha-forte);
+}
+
+.ficha[data-saude='saudavel'] {
+  border-left-color: var(--jade);
+}
+
+.ficha[data-saude='em_tratamento_medico'] {
+  border-left-color: var(--alerta);
+}
+
+.ficha[data-saude='em_recuperacao'] {
+  border-left-color: var(--ambar-tarja);
+}
+
+/* --- Espaco para a foto ----------------------------------------------- */
+
+.moldura {
+  position: relative;
+  background: var(--ficha-fundo);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+
+.moldura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  grid-area: 1 / 1;
+}
+
+.moldura-grade {
+  aspect-ratio: 4 / 3;
+  border-bottom: 1px solid var(--linha);
+}
+
+.moldura-retrato {
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+
+/* Sem foto: hachura de ficha em branco com a inicial do nome. Deixa claro que
+   o lugar da imagem existe e esta esperando alguem subir uma. */
+.moldura-vazia {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 9px,
+    rgba(18, 51, 49, 0.055) 9px 10px
+  );
+}
+
+.moldura-inicial {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: var(--t-4xl);
+  line-height: 1;
+  color: rgba(18, 51, 49, 0.18);
+  user-select: none;
+}
+
+.moldura-retrato .moldura-inicial {
+  font-size: 6rem;
+}
+
+/* --- Selo de situacao -------------------------------------------------- */
+
+.selo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-2);
+  padding: 2px var(--e-2);
+  border: 1px solid var(--linha-forte);
+  border-radius: 2px;
+  font-size: var(--t-sm);
+  line-height: 1.5;
+  background: var(--branco);
+  color: var(--texto-medio);
+  white-space: nowrap;
+}
+
+.selo::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 1px;
+  background: currentColor;
+  flex: none;
+}
+
+.selo[data-tom='jade'] {
+  color: var(--jade);
+  border-color: var(--jade);
+  background: var(--jade-fraco);
+}
+
+.selo[data-tom='alerta'] {
+  color: var(--alerta);
+  border-color: var(--alerta);
+  background: var(--alerta-fraco);
+}
+
+.selo[data-tom='ambar'] {
+  color: var(--ambar);
+  border-color: var(--ambar-tarja);
+  background: var(--ambar-fraco);
+}
+
+.selo[data-tom='indigo'] {
+  color: var(--indigo);
+  border-color: var(--indigo);
+  background: var(--indigo-fraco);
+}
+
+.selo[data-tom='neutro'] {
+  color: var(--texto-medio);
+  border-color: var(--linha-forte);
+  background: var(--ficha);
+}
+
+/* --- Botoes ------------------------------------------------------------ */
+
+.botao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  padding: 9px var(--e-4);
+  border-radius: var(--raio);
+  border: 1px solid transparent;
+  font-size: var(--t-base);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  background: var(--jade);
+  color: var(--branco);
+  transition: background-color 120ms ease;
+}
+
+.botao:hover {
+  background: var(--jade-escuro);
+}
+
+.botao:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.botao[data-tipo='contorno'] {
+  background: transparent;
+  color: var(--pinho);
+  border-color: var(--linha-forte);
+}
+
+.botao[data-tipo='contorno']:hover {
+  background: var(--branco);
+  border-color: var(--pinho);
+}
+
+.botao[data-tipo='perigo'] {
+  background: var(--alerta);
+  color: var(--branco);
+}
+
+.botao[data-tipo='perigo']:hover {
+  background: #a01f15;
+}
+
+.botao[data-tipo='texto'] {
+  background: transparent;
+  color: var(--jade);
+  padding: 4px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.botao[data-tipo='texto']:hover {
+  background: transparent;
+  color: var(--jade-escuro);
+}
+
+.acoes {
+  display: flex;
+  gap: var(--e-3);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* --- Formularios ------------------------------------------------------- */
+
+.formulario {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.formulario-duplo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: var(--e-4);
+}
+
+.campo {
+  display: grid;
+  gap: var(--e-1);
+}
+
+.campo > label {
+  font-size: var(--t-sm);
+  font-weight: 500;
+  color: var(--texto-medio);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  width: 100%;
+  padding: 9px var(--e-3);
+  background: var(--branco);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  font-size: var(--t-base);
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  outline: 2px solid var(--jade);
+  outline-offset: 0;
+  border-color: var(--jade);
+}
+
+.campo[data-invalido='sim'] input,
+.campo[data-invalido='sim'] select {
+  border-color: var(--alerta);
+}
+
+.campo-dica {
+  font-size: var(--t-sm);
+  color: var(--texto-fraco);
+}
+
+.campo-erro {
+  font-size: var(--t-sm);
+  color: var(--alerta);
+}
+
+.campo-marcador {
+  display: flex;
+  gap: var(--e-3);
+  align-items: flex-start;
+  padding: var(--e-3);
+  border: 1px solid var(--linha-forte);
+  border-radius: var(--raio);
+  background: var(--branco);
+  cursor: pointer;
+}
+
+.campo-marcador input {
+  margin: 3px 0 0;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  accent-color: var(--jade);
+}
+
+.campo-marcador span {
+  font-size: var(--t-base);
+}
+
+.campo-marcador small {
+  display: block;
+  color: var(--texto-fraco);
+  font-size: var(--t-sm);
+  margin-top: 2px;
+}
+
+/* --- Avisos ------------------------------------------------------------ */
+
+.aviso {
+  padding: var(--e-3) var(--e-4);
+  border-radius: var(--raio);
+  border: 1px solid var(--linha-forte);
+  border-left-width: 4px;
+  background: var(--branco);
+  font-size: var(--t-base);
+}
+
+.aviso[data-tom='erro'] {
+  border-color: var(--alerta);
+  background: var(--alerta-fraco);
+  color: #7d1a12;
+}
+
+.aviso[data-tom='sucesso'] {
+  border-color: var(--jade);
+  background: var(--jade-fraco);
+  color: var(--jade-escuro);
+}
+
+.aviso[data-tom='atencao'] {
+  border-color: var(--ambar-tarja);
+  background: var(--ambar-fraco);
+  color: var(--ambar);
+}
+
+.aviso strong {
+  font-weight: 600;
+}
+
+/* --- Filtros ----------------------------------------------------------- */
+
+.filtros {
+  display: flex;
+  gap: var(--e-3);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: var(--e-5);
+  padding: var(--e-4);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+}
+
+.filtros .campo {
+  min-width: 170px;
+}
+
+.filtros-resumo {
+  margin-left: auto;
+  font-size: var(--t-sm);
+  color: var(--texto-medio);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Grade de fichas de pet -------------------------------------------- */
+
+.grade-fichas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(258px, 100%), 1fr));
+  gap: var(--e-4);
+}
+
+.ficha-pet {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+}
+
+.ficha-pet:hover {
+  border-color: var(--pinho);
+}
+
+.ficha-pet-corpo {
+  padding: var(--e-4);
+  display: grid;
+  gap: var(--e-2);
+  flex: 1;
+  align-content: start;
+}
+
+.ficha-pet-nome {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-xl);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--pinho);
+}
+
+.ficha-pet-linha {
+  font-size: var(--t-sm);
+  color: var(--texto-medio);
+}
+
+.ficha-pet-selos {
+  display: flex;
+  gap: var(--e-2);
+  flex-wrap: wrap;
+  margin-top: var(--e-1);
+}
+
+.ficha-pet-doenca {
+  font-size: var(--t-sm);
+  color: var(--alerta);
+  border-top: 1px solid var(--linha);
+  padding-top: var(--e-2);
+  margin-top: var(--e-1);
+}
+
+/* --- Tabelas ----------------------------------------------------------- */
+
+.tabela-envolucro {
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-radius: var(--raio);
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-base);
+}
+
+.tabela th {
+  text-align: left;
+  font-weight: 600;
+  font-size: var(--t-sm);
+  color: var(--pinho);
+  padding: var(--e-3) var(--e-4);
+  border-bottom: 2px solid var(--pinho);
+  white-space: nowrap;
+}
+
+.tabela td {
+  padding: var(--e-3) var(--e-4);
+  border-bottom: 1px solid var(--linha);
+  vertical-align: middle;
+}
+
+.tabela tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabela tbody tr:hover {
+  background: rgba(223, 231, 223, 0.45);
+}
+
+.tabela .numero {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.tabela .principal {
+  font-weight: 600;
+  color: var(--pinho);
+}
+
+/* --- Paginacao --------------------------------------------------------- */
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-4);
+  margin-top: var(--e-4);
+  font-size: var(--t-sm);
+  color: var(--texto-medio);
+  flex-wrap: wrap;
+}
+
+.paginacao-contagem {
+  font-variant-numeric: tabular-nums;
+}
+
+.paginacao-botoes {
+  display: flex;
+  gap: var(--e-2);
+}
+
+/* --- Estados vazios e carregamento ------------------------------------- */
+
+.vazio {
+  padding: var(--e-7) var(--e-5);
+  text-align: center;
+  border: 1px dashed var(--linha-forte);
+  border-radius: var(--raio);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.vazio h3 {
+  font-size: var(--t-lg);
+  margin-bottom: var(--e-2);
+}
+
+.vazio p {
+  color: var(--texto-medio);
+  max-width: 46ch;
+  margin: 0 auto var(--e-4);
+}
+
+.carregando {
+  padding: var(--e-6);
+  color: var(--texto-fraco);
+}
+
+/* --- Sobreposicao (confirmacoes) --------------------------------------- */
+
+.sobreposicao {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 51, 49, 0.45);
+  display: grid;
+  place-items: center;
+  padding: var(--e-4);
+  z-index: 50;
+}
+
+.painel-flutuante {
+  background: var(--branco);
+  border-radius: var(--raio-suave);
+  border: 1px solid var(--linha);
+  box-shadow: 0 18px 44px rgba(18, 51, 49, 0.28);
+  width: min(520px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--e-5);
+}
+
+.painel-flutuante h2 {
+  font-size: var(--t-lg);
+  margin-bottom: var(--e-3);
+}
+
+/* --- Login ------------------------------------------------------------- */
+
+.login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+}
+
+/* Painel da esquerda: o espaco grande reservado para a foto do abrigo.
+   Troque a imagem em public/abrigo.jpg e ela aparece aqui automaticamente. */
+.login-imagem {
+  position: relative;
+  background: var(--pinho);
+  display: grid;
+  overflow: hidden;
+}
+
+.login-imagem img {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.login-imagem-vazia {
+  grid-area: 1 / 1;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0 14px,
+    rgba(255, 255, 255, 0.06) 14px 15px
+  );
+}
+
+/* Placa sobre a foto. O fundo proprio e o que mantem o texto legivel seja qual
+   for a imagem que a ONG colocar ali - claro, escuro ou cheio de detalhe.
+   z-index porque o conteudo de um <img> pinta acima do fundo de elementos nao
+   posicionados: sem isso a placa sumiria atras da foto. */
+.login-legenda {
+  grid-area: 1 / 1;
+  align-self: center;
+  justify-self: start;
+  margin: var(--e-6);
+  padding: var(--e-6);
+  max-width: 30rem;
+  background: rgba(12, 36, 34, 0.86);
+  border-radius: var(--raio);
+  color: var(--branco);
+  position: relative;
+  z-index: 1;
+}
+
+.login-legenda h1 {
+  color: var(--branco);
+  font-size: var(--t-4xl);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  max-width: 14ch;
+}
+
+.login-legenda p {
+  margin-top: var(--e-4);
+  max-width: 44ch;
+  color: #c6d8d0;
+}
+
+.login-form {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  padding: var(--e-7) var(--e-7);
+  background: var(--ficha);
+}
+
+.login-form-caixa {
+  width: min(400px, 100%);
+  display: grid;
+  gap: var(--e-5);
+}
+
+.login-marca {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: var(--t-2xl);
+  letter-spacing: -0.04em;
+  color: var(--pinho);
+}
+
+.login-marca em {
+  font-style: normal;
+  color: var(--jade);
+}
+
+@media (max-width: 860px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+
+  .login-imagem {
+    min-height: 280px;
+  }
+
+  .login-legenda {
+    margin: var(--e-4);
+    padding: var(--e-4);
+    justify-self: stretch;
+  }
+
+  .login-legenda h1 {
+    font-size: var(--t-2xl);
+  }
+
+  .login-legenda p {
+    display: none;
+  }
+
+  .login-form {
+    padding: var(--e-6) var(--e-4) var(--e-7);
+    justify-items: stretch;
+  }
+}
+
+/* --- Painel (a pagina inicial) ----------------------------------------- */
+
+/* O destaque e uma frase, nao um numero gigante: quem abre o painel precisa
+   saber o que fazer agora, e isso se diz com palavras. */
+.destaque {
+  background: var(--pinho);
+  color: var(--branco);
+  border-radius: var(--raio);
+  padding: var(--e-6);
+  margin-bottom: var(--e-6);
+}
+
+.destaque p {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: var(--t-xl);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  max-width: 34ch;
+  color: var(--branco);
+}
+
+.destaque .numero-destaque {
+  font-weight: 800;
+  color: #8fd3b9;
+  font-variant-numeric: tabular-nums;
+}
+
+.destaque-rodape {
+  margin-top: var(--e-5);
+  padding-top: var(--e-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  display: flex;
+  gap: var(--e-6);
+  flex-wrap: wrap;
+}
+
+.destaque-medida {
+  font-size: var(--t-sm);
+  color: #a7c0b7;
+}
+
+.destaque-medida b {
+  display: block;
+  font-family: var(--display);
+  font-size: var(--t-lg);
+  font-weight: 700;
+  color: var(--branco);
+  font-variant-numeric: tabular-nums;
+}
+
+.painel-secoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr));
+  gap: var(--e-5);
+  align-items: start;
+}
+
+.secao-titulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-3);
+  margin-bottom: var(--e-3);
+  padding-bottom: var(--e-2);
+  border-bottom: 1px solid var(--linha-forte);
+}
+
+.secao-titulo h2 {
+  font-size: var(--t-lg);
+}
+
+.lista-atencao {
+  display: grid;
+  gap: var(--e-2);
+}
+
+.item-atencao > span {
+  min-width: 0;
+}
+
+.item-atencao {
+  display: flex;
+  gap: var(--e-3);
+  align-items: center;
+  padding: var(--e-3) var(--e-4);
+  background: var(--branco);
+  border: 1px solid var(--linha);
+  border-left: 5px solid var(--linha-forte);
+  border-radius: var(--raio);
+  text-decoration: none;
+  color: inherit;
+}
+
+.item-atencao:hover {
+  border-color: var(--pinho);
+}
+
+.item-atencao[data-saude='em_tratamento_medico'] {
+  border-left-color: var(--alerta);
+}
+
+.item-atencao[data-saude='em_recuperacao'] {
+  border-left-color: var(--ambar-tarja);
+}
+
+.item-atencao[data-saude='saudavel'] {
+  border-left-color: var(--jade);
+}
+
+.item-atencao-nome {
+  display: block;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-md);
+  letter-spacing: -0.02em;
+  color: var(--pinho);
+}
+
+.item-atencao-detalhe {
+  display: block;
+  font-size: var(--t-sm);
+  color: var(--texto-medio);
+}
+
+.item-atencao-fim {
+  margin-left: auto;
+  text-align: right;
+}
+
+/* --- Detalhe do pet ---------------------------------------------------- */
+
+.detalhe-pet > * {
+  min-width: 0;
+}
+
+.detalhe-pet {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--e-6);
+  align-items: start;
+}
+
+.detalhe-coluna-foto {
+  display: grid;
+  gap: var(--e-3);
+  position: sticky;
+  top: var(--e-5);
+}
+
+.detalhe-blocos {
+  display: grid;
+  gap: var(--e-5);
+  min-width: 0;
+}
+
+/* Nome do pet e seus selos, acima da ficha inteira. */
+.cabecalho-ficha {
+  margin-bottom: var(--e-5);
+  padding-bottom: var(--e-4);
+  border-bottom: 2px solid var(--pinho);
+}
+
+.cabecalho-ficha h1 {
+  font-size: var(--t-3xl);
+}
+
+.cabecalho-ficha .ficha-pet-selos {
+  margin-top: var(--e-3);
+}
+
+.dados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+  gap: var(--e-4) var(--e-5);
+}
+
+.dado {
+  display: grid;
+  gap: 2px;
+}
+
+.dado dt {
+  font-size: var(--t-sm);
+  color: var(--texto-fraco);
+}
+
+.dado dd {
+  margin: 0;
+  font-size: var(--t-md);
+  color: var(--texto);
+}
+
+@media (max-width: 820px) {
+  .detalhe-pet {
+    grid-template-columns: 1fr;
+  }
+
+  .detalhe-coluna-foto {
+    position: static;
+    max-width: 320px;
+  }
+}
+
+/* --- Utilidades enxutas ------------------------------------------------ */
+
+.pilha-3 {
+  display: grid;
+  gap: var(--e-3);
+}
+
+.pilha-4 {
+  display: grid;
+  gap: var(--e-4);
+}
+
+.pilha-5 {
+  display: grid;
+  gap: var(--e-5);
+}
+
+.texto-fraco {
+  color: var(--texto-fraco);
+  font-size: var(--t-sm);
+}
+
+.numero-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Dado pessoal coberto (LGPD) --------------------------------------- */
+
+.dado-sigiloso {
+  display: inline-flex;
+  gap: var(--e-2);
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.dado-sigiloso .botao {
+  font-size: var(--t-sm);
+}
+
+.contato-linha {
+  display: block;
+}
+
+.contato-linha + .contato-linha {
+  color: var(--texto-medio);
+  font-size: var(--t-sm);
+}
+
+/* --- Fila de espera por adocao ----------------------------------------- */
+
+.fila-espera {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr));
+  gap: var(--e-3);
+}
+
+.item-espera {
+  padding: var(--e-3) var(--e-4);
+  border-left: 5px solid var(--linha-forte);
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.item-espera:hover {
+  border-color: var(--pinho);
+}
+
+.item-espera[data-saude='em_tratamento_medico'] {
+  border-left-color: var(--alerta);
+}
+
+.item-espera[data-saude='em_recuperacao'] {
+  border-left-color: var(--ambar-tarja);
+}
+
+.item-espera[data-saude='saudavel'] {
+  border-left-color: var(--jade);
+}
