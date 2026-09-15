@@ -9,3 +9,7 @@ uploads/*
 .mypy_cache/
 .ruff_cache/
 *.egg-info/
+
+# Ferramentas de IA local (skills do Claude Code), nao fazem parte do projeto
+.agents/
+skills-lock.json

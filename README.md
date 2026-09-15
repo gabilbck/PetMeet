@@ -148,10 +148,23 @@ Perfis de usuario: `admin` e `voluntario` — ambos sao "equipe da ONG" e podem
 operar cadastros; rotas de criacao de usuarios (`/usuarios`) sao restritas a
 `admin`.
 
-## Preparacao para o front-end
+## Front-end
+
+O painel web da equipe fica em [`frontend/`](frontend/) — React + TypeScript +
+Vite. Instrucoes de instalacao, decisoes de interface e o que ainda depende da
+API estao em [`frontend/README.md`](frontend/README.md).
+
+```bash
+cd frontend
+npm install
+npm run dev     # http://localhost:5173
+```
+
+Em desenvolvimento o Vite faz proxy de `/api` e `/uploads` para
+`http://localhost:8000`, entao nao e preciso mexer em CORS para rodar local.
 
 - CORS liberado por variavel de ambiente (`ORIGENS_PERMITIDAS`) — adicione a
-  URL do seu app React ali.
+  URL do painel ali quando for publicar.
 - Contrato completo (schemas, códigos de erro, exemplos) disponivel em
   `/docs` (Swagger) e `/openapi.json`.
 - Fotos de pet ficam acessiveis em `GET /uploads/<arquivo>` apos o upload em
@@ -176,14 +189,14 @@ regras criticas.
 Pendente para uma proxima fase (arquitetura ja preparada, so falta
 implementar as rotas/servicos especificos):
 
-- **RF08** — histórico de adoções por adotante/pet (a query já existe em
-  `repositorios/processo_adocao.py::listar`, falta expor um endpoint dedicado
-  de histórico consolidado).
+- **RF08** — o painel já monta o histórico por adotante e por pet usando os
+  filtros `adotante_id`/`pet_id` de `GET /processos-adocao`. Falta apenas o
+  endpoint dedicado de histórico consolidado, se for desejado.
 - **RF10/RF11** — associação padrinho↔pet (modelo `Apadrinhamento` já existe
   em `app/modelos/apadrinhamento.py`, falta a camada de serviço/rotas).
 - **RF13** — filtros avançados de consulta de doações.
-- **RF19** — o upload já está implementado; falta apenas o time de front-end
-  integrar o formulário.
+- **RF19** — concluído: o upload está implementado na API e integrado no
+  painel (ficha do pet, em `frontend/src/paginas/PetDetalhe.tsx`).
 - **RF22** — o modelo `LogAuditoria` já existe; falta instrumentar os
   serviços para gravar cada alteração relevante.
 - **RNF06-RNF10, RNF12, RNF15-RNF20** — observabilidade avançada, cache,

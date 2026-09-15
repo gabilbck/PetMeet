@@ -1,0 +1,11 @@
+node_modules/
+dist/
+
+# Cache incremental do tsc -b
+*.tsbuildinfo
+.env
+.env.local
+
+# Mock local da API (ferramenta de desenvolvimento, nao faz parte do projeto).
+# Se o time decidir adotar, e so remover esta linha e commitar frontend/mock/.
+mock/
