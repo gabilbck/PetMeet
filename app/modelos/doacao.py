@@ -2,12 +2,16 @@
 
 from datetime import date, datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import CheckConstraint, Date, DateTime, ForeignKey, Numeric, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.modelos.enums import FrequenciaContribuicao, coluna_enum
+
+if TYPE_CHECKING:
+    from app.modelos.padrinho import Padrinho
 
 
 class Doacao(Base):
