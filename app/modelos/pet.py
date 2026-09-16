@@ -1,12 +1,17 @@
 """Ficha do pet: dados cadastrais, status de saude e situacao de adocao (RF01-05)."""
 
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Date, DateTime, Index, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.modelos.enums import EspeciePet, SituacaoAdocaoPet, StatusSaudePet, coluna_enum
+
+if TYPE_CHECKING:
+    from app.modelos.apadrinhamento import Apadrinhamento
+    from app.modelos.processo_adocao import ProcessoAdocao
 
 
 class Pet(Base):
