@@ -11,12 +11,17 @@ em duas camadas independentes:
 """
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.modelos.enums import StatusProcessoAdocao, coluna_enum
+
+if TYPE_CHECKING:
+    from app.modelos.adotante import Adotante
+    from app.modelos.pet import Pet
 
 
 class ProcessoAdocao(Base):
