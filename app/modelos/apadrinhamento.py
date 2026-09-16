@@ -1,12 +1,17 @@
 """Associacao M:N entre Padrinho e Pet (RF10), com a frequencia da contribuicao (RF11)."""
 
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
 from app.modelos.enums import FrequenciaContribuicao, coluna_enum
+
+if TYPE_CHECKING:
+    from app.modelos.padrinho import Padrinho
+    from app.modelos.pet import Pet
 
 
 class Apadrinhamento(Base):
