@@ -23,15 +23,16 @@ from testes.conftest import FabricaSessaoTeste
 
 
 async def _criar_pet(sessao: AsyncSession, **sobrescritas) -> Pet:
-    pet = Pet(
-        nome="Pet de Teste",
-        especie="cachorro",
-        idade=4,
-        data_resgate=date(2025, 1, 1),
-        status_saude="saudavel",
-        situacao_adocao="disponivel",
-        **sobrescritas,
-    )
+    dados = {
+        "nome": "Pet de Teste",
+        "especie": "cachorro",
+        "idade": 4,
+        "data_resgate": date(2025, 1, 1),
+        "status_saude": "saudavel",
+        "situacao_adocao": "disponivel",
+    }
+    dados.update(sobrescritas)  # permite sobrescrever qualquer valor padrao
+    pet = Pet(**dados)
     sessao.add(pet)
     await sessao.commit()
     await sessao.refresh(pet)
