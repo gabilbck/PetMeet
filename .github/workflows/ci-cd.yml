@@ -1,0 +1,182 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancela execucoes antigas do mesmo branch/PR quando chega um commit novo
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------- CI: API
+  backend:
+    name: Backend (lint + testes)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: petmeet
+          POSTGRES_PASSWORD: petmeet
+          POSTGRES_DB: petmeet
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U petmeet -d petmeet"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://petmeet:petmeet@localhost:5432/petmeet
+      DATABASE_URL_TESTE: postgresql+asyncpg://petmeet:petmeet@localhost:5432/petmeet_teste
+      SECRET_KEY: chave-apenas-para-ci
+      AMBIENTE: teste
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Instalar dependencias
+        run: pip install -e ".[dev]"
+
+      - name: Ruff
+        run: ruff check .
+
+      - name: Black
+        run: black --check .
+
+      - name: Mypy
+        run: mypy app
+
+      - name: Criar banco de teste
+        run: PGPASSWORD=petmeet psql -h localhost -U petmeet -d petmeet -c "CREATE DATABASE petmeet_teste;"
+
+      - name: Aplicar migrations (valida o Alembic)
+        run: alembic upgrade head
+
+      - name: Pytest
+        run: pytest -v
+
+  # ----------------------------------------------------------- CI: frontend
+  frontend:
+    name: Frontend (lint + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build   # inclui checagem de tipos (tsc -b)
+
+      - name: Publicar build como artefato
+        if: github.event_name == 'push'
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  # ------------------------------------------------ CD: imagem Docker da API
+  docker:
+    name: Docker (build + publicar no GHCR)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Gerar tags da imagem
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha
+            type=ref,event=pr
+
+      - name: Build local para smoke test
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          tags: petmeet-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test (GET /saude)
+        run: |
+          docker run -d --name api -p 8000:8000 petmeet-api:ci
+          for i in $(seq 1 30); do
+            if curl -fs http://localhost:8000/saude; then echo; exit 0; fi
+            sleep 1
+          done
+          docker logs api
+          exit 1
+
+      - name: Login no GHCR
+        if: github.event_name == 'push'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicar imagem
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+
+  # ------------------------------------------------ CD: deploy (opcional)
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: docker
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    env:
+      DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+
+    steps:
+      - name: Disparar deploy hook
+        if: env.DEPLOY_HOOK_URL != ''
+        run: curl -fsS -X POST "$DEPLOY_HOOK_URL"
+
+      - name: Aviso (sem hook configurado)
+        if: env.DEPLOY_HOOK_URL == ''
+        run: echo "::notice::Secret DEPLOY_HOOK_URL nao configurado - imagem publicada, deploy ignorado."
