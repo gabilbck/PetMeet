@@ -1,65 +1,112 @@
-# Débitos técnicos — PetMeet
+# Débito Técnico da PetMeet API
 
-> Registro de pendências conhecidas ao final da N1, para o time que receber o projeto no handoff. Cada item indica o requisito relacionado, o estado atual e o que falta para concluir.
+[#debito-tecnico-da-petmeet-api](#debito-tecnico-da-petmeet-api)
+
+Este documento lista os débitos técnicos conhecidos do projeto, organizados por
+impacto. Serve como referência para quem for priorizar o backlog de uma
+próxima fase (RF/RNF pendentes) e para registrar pontos de risco que não
+aparecem no README.
 
 ## Resumo
 
-| # | Item | Requisito | Status | Esforço estimado |
-|---|------|-----------|--------|-------------------|
-| 1 | Apadrinhamento | RF10 / RF11 | Modelo pronto, serviço/rotas pendentes | Médio |
-| 2 | Filtros avançados de doações | RF13 | Não iniciado | Baixo |
-| 3 | Log de auditoria | RF22 | Modelo pronto, instrumentação pendente | Médio |
-| 4 | Observabilidade avançada | RNF06–RNF10 | Não iniciado | Alto |
-| 5 | Cache | RNF12 | Não iniciado | Médio |
-| 6 | Backup e recuperação automatizados | RNF15–RNF17 | Não iniciado | Alto |
-| 7 | Monitoramento de dependências | RNF18–RNF20 | Não iniciado | Médio |
+[#resumo](#resumo)
 
----
+| # | Débito | Categoria | Impacto | Ação sugerida |
+|---|---|---|---|---|
+| 1 | RF22 — Auditoria não instrumentada | Funcional | Alto | Instrumentar serviços (`processo_adocao`, `usuarios`, `pets`) para gravar em `LogAuditoria` |
+| 2 | RNF06-10, 12, 15-20 — Observabilidade, cache e backup ausentes | Infra | Alto | Priorizar logging estruturado e backup antes de deploy real |
+| 3 | Ausência de pipeline de CI | Processo | Alto | Workflow rodando `ruff`/`black`/`mypy`/`pytest` a cada push/PR |
+| 4 | RF10/RF11 — Apadrinhamento incompleto | Funcional | Médio | Implementar `servicos/` e rotas para o modelo `Apadrinhamento` já existente |
+| 5 | Armazenamento de fotos só em disco local | Infra | Médio | Implementar `armazenamento/s3.py` seguindo a interface já definida |
+| 6 | RF08 — Histórico consolidado | Funcional | Baixo | Endpoint dedicado (hoje contornável via filtros de `GET /processos-adocao`) |
+| 7 | RF13 — Filtros avançados de doações | Funcional | Baixo | Adicionar filtros por período/valor/status |
+| 8 | CORS manual via `ORIGENS_PERMITIDAS` | Operacional | Baixo | Documentar/checklist de deploy para não esquecer de atualizar |
 
-## 1. Apadrinhamento (RF10 / RF11)
+## Como priorizamos
 
-**Status:** modelo de dados já existe em `app/modelos/apadrinhamento.py`; falta a camada de serviço (`servicos/`) e as rotas (`rotas/`) que expõem essa funcionalidade na API.
+[#como-priorizamos](#como-priorizamos)
 
-**O que falta:**
-- Serviço com as regras de negócio de associação padrinho ↔ pet (ex.: um pet pode ter mais de um padrinho? um padrinho pode apadrinhar mais de um pet?).
-- Rotas REST para criar, listar, encerrar um apadrinhamento.
-- Esquemas Pydantic de entrada/saída.
-- Testes cobrindo o fluxo, seguindo o padrão já usado em `testes/test_processo_adocao.py`.
+- **Alto** — afeta rastreabilidade, confiabilidade em produção ou qualidade
+do processo de entrega.
+- **Médio** — funcionalidade incompleta ou limitação de escala conhecida,
+sem risco imediato.
+- **Baixo** — conveniência ou ponto operacional de fácil correção.
 
-**Risco de não fazer:** a funcionalidade de apadrinhamento — citada no nome do próprio sistema ("adoção **e apadrinhamento**") — fica sem API, mesmo com o modelo pronto no banco.
+## Débitos de Alto impacto
 
-## 2. Filtros avançados de doações (RF13)
+[#debitos-de-alto-impacto](#debitos-de-alto-impacto)
 
-**Status:** não iniciado.
+### RF22 — Auditoria não instrumentada
 
-**O que falta:** a rota de consulta de doações existe, mas sem filtros avançados (ex.: por período, por valor, por tipo de doação). Definir com a ONG quais filtros são prioritários antes de implementar.
+O modelo `LogAuditoria` já existe em `app/modelos/`, mas nenhum serviço grava
+nele. Alterações relevantes (mudança de status de processo, edição de
+cadastro, etc.) não deixam rastro. Sistema fica sem histórico de quem alterou
+o quê.
 
-## 3. Log de auditoria (RF22)
+**Ação sugerida:** instrumentar os serviços críticos (`processo_adocao`,
+`usuarios`, `pets`) para gravar um registro de auditoria a cada alteração de
+estado relevante.
 
-**Status:** modelo `LogAuditoria` já existe; falta instrumentar os serviços para gravar cada alteração relevante (quem alterou, o quê, quando, valores antes/depois).
+### RNF06-RNF10, RNF12, RNF15-RNF20 — Observabilidade, cache e backup ausentes
 
-**O que falta:**
-- Decidir quais operações são auditáveis (criação/edição de fichas médicas, finalização de adoção, etc. são as mais sensíveis).
-- Instrumentar a camada de `servicos/` para gravar o log sem acoplar essa responsabilidade à lógica de negócio (ex.: decorator, evento, ou chamada explícita centralizada).
-- Expor rota de consulta do log (somente para `admin`).
+Nenhuma dessas RNFs foi implementada nesta fase: sem métricas, sem logging
+estruturado além do básico, sem cache, sem rotina de backup/recuperação
+automatizada, sem monitoramento de dependências externas.
 
-## 4–7. Observabilidade, cache, backup e monitoramento (RNF06–RNF10, RNF12, RNF15–RNF20)
+**Ação sugerida:** ficou explicitamente a cargo do time de DevOps/infra a
+partir da base entregue (Dockerfile + docker-compose já preparados). Priorizar
+logging estruturado e backup antes de qualquer deploy real.
 
-**Status:** não iniciado — arquitetura já preparada, mas a implementação fica a cargo do time de DevOps/infra a partir da base entregue.
+### Ausência de pipeline de CI
 
-**O que já está pronto para apoiar isso:**
-- `GET /saude` — healthcheck simples para orquestradores.
-- Configuração 100% via variáveis de ambiente (`RNF16`), sem credenciais no código-fonte.
-- `Dockerfile` + `docker-compose.yml` prontos para servir de base a um ambiente de produção.
+Não há `.github/workflows` no repositório. `ruff`, `black`, `mypy` e `pytest`
+existem e funcionam, mas só rodam manualmente — nada impede um merge que
+quebre lint, tipos ou testes.
 
-**O que falta:**
-- Observabilidade: logging estruturado, métricas e tracing (ex.: OpenTelemetry).
-- Cache: identificar rotas de leitura mais custosas (ex.: listagens paginadas) e avaliar Redis ou cache em memória.
-- Backup/recuperação automatizados do PostgreSQL.
-- Monitoramento de dependências (ex.: Dependabot/Renovate + alertas de vulnerabilidade).
+**Ação sugerida:** workflow simples de CI rodando os três comandos de
+qualidade + `pytest` a cada push/PR na `main`.
 
----
+## Débitos de Médio impacto
 
-## Como usar este documento
+[#debitos-de-medio-impacto](#debitos-de-medio-impacto)
 
-Este registro não substitui o código nem a documentação técnica completa (`docs/ARQUITETURA.md`, `docs/MODELO_DE_DADOS.md`). Ele existe para que o time que avaliar a viabilidade de receber o projeto no handoff saiba, em poucos minutos, **o que está pronto, o que está pela metade e o que não foi começado** — e possa estimar o esforço de continuidade com uma base realista.
+### RF10/RF11 — Apadrinhamento incompleto
+
+O modelo `Apadrinhamento` já existe em `app/modelos/apadrinhamento.py`, mas
+falta a camada de `servicos/` e as rotas correspondentes. Funcionalidade
+modelada no banco, mas inacessível pela API.
+
+### Armazenamento de fotos só em disco local
+
+`app/armazenamento/local.py` é a única implementação da interface
+`app/armazenamento/base.py`. Funciona bem para o escopo atual, mas não
+escala para múltiplas instâncias/produção. A interface já foi desenhada para
+suportar S3 (`armazenamento/s3.py` seria a implementação natural), mas isso
+ainda não existe.
+
+## Débitos de Baixo impacto
+
+[#debitos-de-baixo-impacto](#debitos-de-baixo-impacto)
+
+### RF08 — Histórico consolidado
+
+Hoje é possível montar o histórico por adotante ou por pet usando os filtros
+`adotante_id`/`pet_id` de `GET /processos-adocao`. Falta apenas um endpoint
+dedicado, se for desejado.
+
+### RF13 — Filtros avançados de doações
+
+Consulta de doações ainda não tem filtros avançados (período, valor, status).
+
+### CORS configurado manualmente via variável de ambiente
+
+`ORIGENS_PERMITIDAS` precisa ser lembrada e atualizada manualmente a cada
+publicação de um novo front-end/domínio. Baixo risco, mas fácil de esquecer.
+
+## Não coberto por este documento
+
+[#nao-coberto-por-este-documento](#nao-coberto-por-este-documento)
+
+Este levantamento foi feito a partir do README e do `docs/ARQUITETURA.md`.
+Não inclui uma varredura de comentários `TODO`/`FIXME` no código-fonte — vale
+fazer essa checagem antes de fechar o backlog definitivo.
